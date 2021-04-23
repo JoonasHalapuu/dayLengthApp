@@ -1,0 +1,36 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Openlayers web map</title>
+    <link rel="stylesheet" href="libs/v6.5.0-dist/ol.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="grid-container">
+        <div class="gird-1">
+            <div class="sidebar">
+                <h2>Date</h2>
+                <label for="calendarDate">Date:</label>
+                <input type="date" id="calendarDate" name="calDate">
+                <h2>Longitude</h2>
+                <label for="longitude">Longitude:</label>
+                <input type="number" step="any" min=-180 max=180 id="longitude"><!--Ranges -180 to 180 is allowed and . is separator-->
+                <h2>Latitude</h2>
+                <label for="latitude">Latitude:</label>
+                <input type="number" step="any" min=-90 max=90 id="latitude"> <!--Ranges -90 to 90 is allowed and . is separator-->
+                <h3>Sunrise:</h3>
+                <h3>Sunset:</h3>
+                <h3>Length of day:</h3>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div id="js-map" class="map"></div>
+        </div>
+    </div>
+    <script src="./libs/moment/moment.min.js"></script>
+    <script src="./libs/v6.5.0-dist/ol.js"></script>
+    <script src="./main.js"></script>
+</body>
+</html>
