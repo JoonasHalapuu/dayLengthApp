@@ -12,8 +12,11 @@
         <div class="gird-1">
             <div class="sidebar">
                 <h2>Date</h2>
-                <label for="calendarDate">Date:</label>
-                <input type="date" id="calendarDate" name="calDate">
+                <label for="startDate">Start date:</label>
+                <input type="date" id="startDate">
+                <br>
+                <label for="endDate">End date:</label>
+                <input type="date" id="endDate">
                 <br>
                 <label for="longitude">Longitude:</label>
                 <input type="number" step="any" min=-180 max=180 id="longitude"><!--Limits map longitude input ranges [-180,180]-->
@@ -24,6 +27,7 @@
                 <h3>Sunset: <h2 id="sunsetTime"></h2></h3>
                 <h3>Length of day: <h3 id="lengthOfDay"></h3></h3>
             </div>
+            <canvas id="lineChart" height="200" width="200"></canvas>
         </div>
         <div class="grid-2">
             <div id="js-map" class="map"></div>
@@ -31,7 +35,7 @@
     </div>
     <script src="./libs/moment/moment.min.js"></script> <!--Taken from https://momentjs.com/ for time formating-->
     <script src="./libs/v6.5.0-dist/ol.js"></script>   <!--Taken from https://openlayers.org/ for map-->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.0/dist/chart.min.js"></script> <!--Taken from https://www.chartjs.org/ for line graph-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.0/dist/chart.min.js"></script> <!--Taken from https://www.chartjs.org/ for line graphing-->
     <script src="./libs/suncalc/suncalc.js"></script> <!--Taken from https://github.com/mourner/suncalc for calculating sunset and sunrise-->
     <script src="./main.js"></script>
 </body>

@@ -16,3 +16,7 @@ body {
 .sidebar{
     margin-left: 15px;
 }
+
+.canvas{
+    width: 90%;
+}
