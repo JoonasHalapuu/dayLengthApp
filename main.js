@@ -38,7 +38,22 @@ function init(){
         let times = SunCalc.getTimes(new Date(yearMonthDay[0],(yearMonthDay[1]-1),yearMonthDay[2]), latitudeField.value, longitudeField.value);
         sunriseField.innerHTML=times.sunrise.getHours() + ':' + times.sunrise.getMinutes();
         sunseteField.innerHTML=times.sunset.getHours() + ':' + times.sunset.getMinutes();
-        dayLengthField.innerHTML = (times.sunset.getHours()-times.sunrise.getHours())+ ':' +times.sunset.getMinutes();
+
+
+        //Forcing function to work
+        let startDate = document.getElementById("startDate").value;
+        let endDate = document.getElementById("endDate").value;
+        if(endDate){
+        var dateList = getDaysBetweenDates(startDate, endDate);
+        }
+        else{
+            var dateList = getDaysBetweenDates(startDate, startDate);
+        }
+        let daysLengths= calculateDayLengths(latitudeField.value,longitudeField.value,dateList);
+        dayLengthField.innerHTML=Math.trunc(daysLengths[0])+":"+Math.round((daysLengths[0]-Math.trunc(daysLengths[0]))*60);
+
+        updateChart(daysLengths,dateList);
+
     })
 
 
@@ -50,10 +65,12 @@ function init(){
     //Then show years.
     //Given: latitude and longitude numbers and an array of dates to calculate day lengths for.
     //Return:  array of numbers where each represents the days length of given date respectively.
-    var calculateDayLengths= function(latitude, longitude, datesArray){
+    calculateDayLengths= function(latitude, longitude, datesArray){
         let x=[];
+        //When datesArray.length<30 -> show all dates separately
         for (i=0; i<datesArray.length; i++){
-            let date = datesArray[i].value.split("-");
+            //console.log(datesArray[i])
+            let date = datesArray[i].split("-");//YYYY-MM-DD
             let times = SunCalc.getTimes(new Date(date[0],(date[1]-1),date[2]), latitude, longitude);
             x.push(dayLength(times.sunrise, times.sunset));
         }
@@ -62,13 +79,20 @@ function init(){
 
     //Given: sunrise and sunset of Suncalc times getTimes function.
     //Return: correctly calculated length of the day rounded up to minutes.
+    //Author: https://stackoverflow.com/questions/10804042/calculate-time-difference-with-javascript/27484203
     var dayLength= function (sunrise, sunset){
-        let riseHours = sunrise.getHours()
-        let riseMinutes = sunrise.getMinutes()
-        let setHours = sunset.getHours()
-        let setMinutes = sunset.getMinutes()
-
-        //TODO CALCULATE CORRECTLY!
+        var startDate = new Date(0, 0, 0, sunrise.getHours(), sunrise.getMinutes(),0);
+        var endDate = new Date(0, 0, 0, sunset.getHours(), sunset.getMinutes(), 0);
+        var diff = endDate.getTime() - startDate.getTime();
+        var hours = Math.floor(diff / 1000 / 60 / 60);
+        diff -= hours * 1000 * 60 * 60;
+        var minutes = Math.floor(diff / 1000 / 60);
+    
+        //For 24 hour format
+        if (hours < 0)
+           hours = hours + 24;
+        // For nice format for future refrerences.   (hours <= 9 ? "0" : "") + hours + ":" + (minutes <= 9 ? "0" : "") + minutes
+        return (hours*60+minutes)/60;
     }
 
     //Set default date to today.
@@ -92,7 +116,7 @@ function init(){
             lineTension: 0.2,
             backgroundColor: 'rgb(255, 192, 203)',
             borderColor: 'rgb(255, 99, 132)',
-            data: [0, 10, 5, 2, 20, 30, 45],
+            data: [0, 10.5, 5, 2.44, 20, 30, 45],
         }],
     };
 
@@ -117,6 +141,13 @@ function init(){
     );
 
 
+    updateChart = function(values, newLabels){
+        myChart.data.datasets[0].data =values;
+        myChart.data.labels=newLabels;
+        myChart.update();
+    };
+
+
     //Must be refractored into proper function and added to "startDate.onchange" as well.
     document.getElementById("endDate").onchange = function(){
         // print out all dates between given time.
@@ -124,7 +155,6 @@ function init(){
         let endDate = document.getElementById("endDate").value;
 
         var dateList = getDaysBetweenDates(startDate, endDate);
-        console.log(dateList);
     };
     
 }
@@ -139,7 +169,7 @@ var getDaysBetweenDates = function(startDate, endDate) {
     var now = startDate.clone(), dates = [];
     
     while (now.isSameOrBefore(endDate)) {
-        dates.push(now.format('MM/DD/YYYY'));
+        dates.push(now.format('YYYY-MM-DD'));
         now.add(1, 'days');
     }
     return dates;
