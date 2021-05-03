@@ -8,31 +8,34 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div class="grid-container">
-        <div class="gird-1">
-            <div class="sidebar">
-                <h2>Date</h2>
-                <label for="startDate">Start date:</label>
-                <input type="date" id="startDate">
-                <br>
-                <label for="endDate">End date:</label>
-                <input type="date" id="endDate">
-                <br>
-                <label for="longitude">Longitude:</label>
-                <input type="number" step="any" min=-180 max=180 id="longitude"><!--Limits map longitude input ranges [-180,180]-->
-                <br>
-                <label for="latitude">Latitude:</label>
-                <input type="number" step="any" min=-90 max=90 id="latitude"> <!--Limits map latitude input ranges to [-90,90]-->
-                <h3>Sunrise: <h3 id="sunriseTime"></h3></h3>
-                <h3>Sunset: <h2 id="sunsetTime"></h2></h3>
-                <h3>Length of day: <h3 id="lengthOfDay"></h3></h3>
-            </div>
-            <canvas id="lineChart" height="200" width="200"></canvas>
+    <div class="inputs">
+        <div class="input">
+            <label for="startDate">Start date:</label>
+            <input type="date" id="startDate">
         </div>
-        <div class="grid-2">
-            <div id="js-map" class="map"></div>
+        <div class="input">
+            <label for="endDate">End date:</label>
+            <input type="date" id="endDate">
+        </div>
+        <div class="input">
+            <label for="longitude">Longitude:</label>
+            <input type="number" step="any" min=-180 max=180 id="longitude"><!--Limits map longitude input ranges [-180,180]-->
+        </div>
+        <div class="input">
+            <label for="latitude">Latitude:</label>
+            <input type="number" step="any" min=-90 max=90 id="latitude"> <!--Limits map latitude input ranges to [-90,90]-->
         </div>
     </div>
+    <div class="outputs">
+        <p>Sunrise: <strong id="sunriseTime"></strong></p>
+        <p>Sunset: <strong id="sunsetTime"></strong></p>
+        <p>Length of day: <strong id="lengthOfDay"></strong></p>
+    </div>
+    <div id="js-map" class="map"></div>
+    <div class="charts">
+        <canvas id="lineChart" height="10%" width="75vw"></canvas>
+    </div>
+
     <script src="./libs/moment/moment.min.js"></script> <!--Taken from https://momentjs.com/ for time formating-->
     <script src="./libs/v6.5.0-dist/ol.js"></script>   <!--Taken from https://openlayers.org/ for map-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.0/dist/chart.min.js"></script> <!--Taken from https://www.chartjs.org/ for line graphing-->

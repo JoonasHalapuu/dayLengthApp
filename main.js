@@ -172,10 +172,10 @@ showSunTimes = function(){
     let yearMonthDay = startDate.split("-");
     let times = SunCalc.getTimes(new Date(yearMonthDay[0],(yearMonthDay[1]-1),yearMonthDay[2]), latitude, longitude);
 
-    let sunriseHour=times.sunrise.getHours()
-    let sunriseMin=times.sunrise.getMinutes()
-    let sunsetHour=times.sunset.getHours()
-    let sunsetMin=times.sunset.getMinutes()
+    let sunriseHour=times.sunrise.getUTCHours()
+    let sunriseMin=times.sunrise.getUTCMinutes()
+    let sunsetHour=times.sunset.getUTCHours()
+    let sunsetMin=times.sunset.getUTCMinutes()
 
     //Show sunrise & sunset
     if(isNaN(sunriseHour) || isNaN(sunsetHour)){

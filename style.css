@@ -7,20 +7,41 @@ body {
     padding: 0;
 }
 
-.grid-container{
-    display: grid;
-    grid-template-columns: 20vw 80vw;
-    grid-template-rows: 100vh;
+
+.inputs{
+    margin: 2% 3% 0 3%;
+    text-align: center;
 }
 
-.sidebar{
-    margin-left: 15px;
+.input{
+    display: inline-block;
+    margin-right: 3%;
 }
 
-.canvas{
-    width: 90%;
+.input label{
+    margin-right: 5px;
 }
 
-#lineChart{
-    display: none;
+.outputs{
+    padding: 0 auto;
+    text-align: center;
+
+}
+
+.outputs p{
+    display: inline-block;
+    padding: 1%;
+}
+
+.map{
+    width: 75%;
+    height: 60%;
+    margin: auto;
+    border: rgba(145, 195, 211, 0.984) solid 3px;
+}
+
+.charts{
+    text-align: center;
+    margin: auto;
+    width: 75%;
 }
