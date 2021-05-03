@@ -3,8 +3,8 @@ window.onload = init
 function init(){ 
     //Set default date to today.
     var today = moment().format('YYYY-MM-DD');
+    //end date can not be before start date and start date can not be after end date.
     document.getElementById("startDate").value= today;
-    //end date can not be before start date.
     document.getElementById("endDate").min = today
 
 
@@ -27,7 +27,7 @@ function init(){
                     anchor: [0.5, 46],
                     anchorXUnits: 'fraction',
                     anchorYUnits: 'pixels',
-                    src: './libs/Images/marker-48.png' //https://www.iconsdb.com/soylent-red-icons/map-marker-2-icon.html
+                    src: './libs/Images/marker-48.png' //from https://www.iconsdb.com/soylent-red-icons/map-marker-2-icon.html
                   })
                 }),
               })
@@ -37,7 +37,6 @@ function init(){
 
 
     map.on('click', function(e){
-
         //Set marker to click location
         moveMarker(map.getLayers().array_[1],e.coordinate[0],e.coordinate[1]);
         
@@ -49,27 +48,27 @@ function init(){
         //update sunrise, sunset times and calculate day length. 
         showSunTimes();
 
-        //Draw line chart
+        //Draw line chart if possible
         let endDate = document.getElementById("endDate").value;
         if(endDate){
             if (endDate<document.getElementById("startDate").value)
                 alert("Start date should be before end date!");
             else
-               updateChart(endDate);
+               updateChart(dayLengthChart);
         }
     })
 
 
     //Creating the chart
-    var myChart = new Chart(
+    var dayLengthChart = new Chart(
         document.getElementById('lineChart'),
         {type: 'line',
         data: {datasets: [{
             label: 'Day length in hours',
             fill: true,
-            lineTension: 0.2,
-            backgroundColor: 'rgb(255, 192, 203)',
-            borderColor: 'rgb(255, 99, 132)',
+            lineTension: 0.1,
+            backgroundColor: 'rgb(161, 240, 255)',
+            borderColor: 'rgb(63, 200, 250)',
         }]},
         options: {
             scales: {
@@ -82,61 +81,48 @@ function init(){
         }}
     );
 
+    //Don't show chart at the beginning.
     document.getElementById('lineChart').style.display ="none";
-
-
-    updateChart = function(endDate){
-        let startDate = document.getElementById("startDate").value;
-        let latitude = document.getElementById("latitude").value;
-        let longitude = document.getElementById("longitude").value;
-
-        let datesList = getDaysBetweenDates(startDate, endDate);
-        let daysLengths= calculateDayLengths(latitude,longitude,datesList);
-
-        myChart.data.datasets[0].data = daysLengths;
-        myChart.data.labels=datesList;
-        myChart.update();
-        document.getElementById('lineChart').style.display = "block";
-    };
-
 
     document.getElementById("startDate").onchange = function(){
         if (document.getElementById("longitude").value && document.getElementById("latitude").value)
             showSunTimes();
-        // print out all dates between given time.
+
         let startDate = document.getElementById("startDate");
         let endDate = document.getElementById("endDate");
         endDate.min = startDate.value; 
-        if (endDate.value<startDate.value || endDate.value.split("-")[0]-startDate.value.split("-")[0]>50)
-            return;
-        if(endDate.value && document.getElementById("longitude").value && document.getElementById("latitude").value)
-            updateChart(endDate.value);
+
+        updateChart(dayLengthChart);
     };
 
     document.getElementById("endDate").onchange = function(){
         let startDate = document.getElementById("startDate");
         let endDate = document.getElementById("endDate");
-        if (endDate.value<startDate.value)
-            return;
+        
         startDate.max = endDate.value; 
-        if(document.getElementById("longitude").value && document.getElementById("latitude").value)
-            updateChart(endDate.value);
+
+        updateChart(dayLengthChart);
     };
 
 
-    function updateCordinates(coordinateUnits){
+    //Updates as much of the page as possible. 
+    //Given: coordinateUnits = units that have been changed (longitude or latitude)
+    //       layer = the layer of the map to change
+    function updateCordinates(coordinateUnits, layer){
         let units = document.getElementById(coordinateUnits).value;
-        let maxminValue = units == "longitude" ? 180 : 90;
-        if (!units || -maxminValue>units || units>maxminValue)
-            alert(coordinateUnits.charAt(0).toUpperCase() + coordinateUnits.slice(1)+" needs to be in ranges from -"+maxminValue+" to "+maxminValue);
+        let maxValue = coordinateUnits.localeCompare("longitude")==0 ? 180 : 90;
+
+        if (!units || -maxValue>units || units>maxValue)
+            alert(coordinateUnits.charAt(0).toUpperCase() + coordinateUnits.slice(1)+" needs to be in ranges from -"+maxValue+" to "+maxValue);
         else{
+            //Update page
             let otherUnit = document.getElementById((coordinateUnits == "longitude"?"latitude":"longitude")).value;
             if(otherUnit){
-                moveMarker(map.getLayers().array_[1],coordinateUnits=="longitude"?units:otherUnit, coordinateUnits=="latitude"?units:otherUnit);
+                moveMarker(layer,coordinateUnits=="longitude"?units:otherUnit, coordinateUnits=="latitude"?units:otherUnit);
                 if(document.getElementById("endDate").value){
-                    if(document.getElementById("endDate").value>=document.getElementById("startDate").value)
-                        updateChart(document.getElementById("endDate").value);
-                    else alert("Start date should be before end date!");
+                    if(document.getElementById("endDate").value && document.getElementById("endDate").value<document.getElementById("startDate").value)
+                        alert("Start date should be before end date!");
+                    else updateChart(dayLengthChart); 
                 }
                 showSunTimes();
             }
@@ -144,15 +130,19 @@ function init(){
     }
 
     document.getElementById("longitude").onchange = function(){
-        updateCordinates("longitude");
+        updateCordinates("longitude", map.getLayers().array_[1]);
     };
 
     
     document.getElementById("latitude").onchange = function(){
-        updateCordinates("latitude")
+        updateCordinates("latitude",map.getLayers().array_[1])
     };
 }
 
+//Moves the red marker to given coordinates on the map
+//Given: layer = layer on which the marker is
+   //longitude = longitude of the markers new place
+   //latitude  = latitude of the markers new place
 function moveMarker(layer,longitude, latitude){
     layer.setSource(new ol.source.Vector({
         features: [new ol.Feature({
@@ -161,8 +151,27 @@ function moveMarker(layer,longitude, latitude){
       }))
 }
 
-//Why should u store a function in var or let?
-showSunTimes = function(){
+//Updates the line chart
+//Given: chart to be updated.
+function updateChart(chart){
+    let endDate = document.getElementById("endDate").value;
+    let startDate = document.getElementById("startDate").value;
+    let latitude = document.getElementById("latitude").value;
+    let longitude = document.getElementById("longitude").value;
+
+    if(endDate>=startDate && endDate.split("-")[0]-startDate.split("-")[0]<=50 && longitude && latitude){
+        let datesList = getDaysBetweenDates(startDate, endDate);
+        let daysLengths= calculateDayLengths(latitude,longitude,datesList);
+
+        chart.data.datasets[0].data = daysLengths;
+        chart.data.labels=datesList;
+        chart.update();
+        document.getElementById('lineChart').style.display = "block";
+    }
+};
+
+//Updates pages sunrise, sunset and day length times
+function showSunTimes(){
     //Get coordinates
     let longitude = document.getElementById('longitude').value;
     let latitude = document.getElementById('latitude').value;
@@ -179,6 +188,7 @@ showSunTimes = function(){
 
     //Show sunrise & sunset
     if(isNaN(sunriseHour) || isNaN(sunsetHour)){
+        //In case of polar night or day
         document.getElementById("sunriseTime").innerHTML="-";
         document.getElementById("sunsetTime").innerHTML="-";
     }
@@ -195,9 +205,11 @@ showSunTimes = function(){
 
 };
 
+//Calculates lengths of days of given time period and coordinates.
 //Given: latitude and longitude numbers and an array of dates to calculate day lengths for.
-//Return:  array of numbers where each represents the days length of given date respectively.
-calculateDayLengths= function(latitude, longitude, datesArray){
+//       datesArray = array of given dates for which day length needs to be calculated.
+//Return: array of numbers where each represents the days length of given date respectively.
+function calculateDayLengths(latitude, longitude, datesArray){
     let x=[];
     //When datesArray.length<30 -> show all dates separately
     for (i=0; i<datesArray.length; i++){
@@ -215,6 +227,7 @@ calculateDayLengths= function(latitude, longitude, datesArray){
     return x;
 };
 
+//Calculates the length of a single day when sunset and sunrise times are known.
 //Given: sunrise and sunset of Suncalc times getTimes function.
 //Return: correctly calculated length of the day rounded up to minutes.
 //Author: https://stackoverflow.com/questions/10804042/calculate-time-difference-with-javascript/27484203
@@ -249,9 +262,9 @@ var getDaysBetweenDates = function(startDate, endDate) {
     return dates;
 };
 
-
-
-
+//Formats given hours and minutes to HH:MM.
+//Given hours and minutes
+//Returns sama hours and minutes in full HH:MM format. 
 prettyTimeFormat = function(hours, minutes){
     return (hours <= 9 ? "0" : "") + hours + ':' + (minutes <= 9 ? "0" : "") + minutes;
 }
