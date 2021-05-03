@@ -15,7 +15,7 @@ function init(){
             zoom: 2,
             projection: 'EPSG:4326',//Coordinates in x = longitude and y = latitude, 
             maxZoom: 20,
-            extent: [-180,-90,180,90] //Map cannot go out of bounds.
+            extent: [-183,-93,183,93]
         }),
         layers: [
             new ol.layer.Tile({
@@ -105,38 +105,42 @@ function init(){
     };
 
 
-    //Updates as much of the page as possible. 
-    //Given: coordinateUnits = units that have been changed (longitude or latitude)
-    //       layer = the layer of the map to change
-    function updateCordinates(coordinateUnits, layer){
-        let units = document.getElementById(coordinateUnits).value;
-        let maxValue = coordinateUnits.localeCompare("longitude")==0 ? 180 : 90;
-
-        if (!units || -maxValue>units || units>maxValue)
-            alert(coordinateUnits.charAt(0).toUpperCase() + coordinateUnits.slice(1)+" needs to be in ranges from -"+maxValue+" to "+maxValue);
-        else{
-            //Update page
-            let otherUnit = document.getElementById((coordinateUnits == "longitude"?"latitude":"longitude")).value;
-            if(otherUnit){
-                moveMarker(layer,coordinateUnits=="longitude"?units:otherUnit, coordinateUnits=="latitude"?units:otherUnit);
-                if(document.getElementById("endDate").value){
-                    if(document.getElementById("endDate").value && document.getElementById("endDate").value<document.getElementById("startDate").value)
-                        alert("Start date should be before end date!");
-                    else updateChart(dayLengthChart); 
-                }
-                showSunTimes();
-            }
-        }
-    }
-
     document.getElementById("longitude").onchange = function(){
-        updateCordinates("longitude", map.getLayers().array_[1]);
+        updateCordinates("longitude", map.getView(), map.getLayers().array_[1], dayLengthChart);
     };
 
     
     document.getElementById("latitude").onchange = function(){
-        updateCordinates("latitude",map.getLayers().array_[1])
+        updateCordinates("latitude", map.getView(), map.getLayers().array_[1], dayLengthChart)
     };
+}
+
+//Updates as much of the page as possible. 
+//Given: coordinateUnits = units that have been changed (longitude or latitude)
+//       layer = the layer of the map to change
+function updateCordinates(coordinateUnits, view, layer, chart){
+    let units = document.getElementById(coordinateUnits).value;
+    let maxValue = coordinateUnits.localeCompare("longitude")==0 ? 180 : 90;
+
+    if (!units || -maxValue>units || units>maxValue)
+        alert(coordinateUnits.charAt(0).toUpperCase() + coordinateUnits.slice(1)+" needs to be in ranges from -"+maxValue+" to "+maxValue);
+    else{
+        //Update page
+        let otherUnit = document.getElementById((coordinateUnits == "longitude"?"latitude":"longitude")).value;
+        if(otherUnit){
+            let longitude = coordinateUnits.localeCompare("longitude")==0?units:otherUnit;
+            let latitude =  coordinateUnits.localeCompare("latitude")==0?units:otherUnit;
+            
+            view.setCenter([longitude, latitude]);
+            moveMarker(layer,longitude, latitude);
+            if(document.getElementById("endDate").value){
+                if(document.getElementById("endDate").value && document.getElementById("endDate").value<document.getElementById("startDate").value)
+                    alert("Start date should be before end date!");
+                else updateChart(chart); 
+            }
+            showSunTimes();
+        }
+    }
 }
 
 //Moves the red marker to given coordinates on the map
@@ -231,7 +235,7 @@ function calculateDayLengths(latitude, longitude, datesArray){
 //Given: sunrise and sunset of Suncalc times getTimes function.
 //Return: correctly calculated length of the day rounded up to minutes.
 //Author: https://stackoverflow.com/questions/10804042/calculate-time-difference-with-javascript/27484203
-var dayLength= function (sunrise, sunset){
+function  dayLength(sunrise, sunset){
     var startDate = new Date(0, 0, 0, sunrise.getUTCHours(), sunrise.getUTCMinutes(),0);
     var endDate = new Date(0, 0, 0, sunset.getUTCHours(), sunset.getUTCMinutes(), 0);
     var diff = endDate.getTime() - startDate.getTime();
@@ -249,8 +253,8 @@ var dayLength= function (sunrise, sunset){
 //Finds all dates between given two dates.
 //Given: startDate and endDate.
 //Return: array of dates in MM/DD/YYYY and in chronological order.
-//Credit: https://www.itsolutionstuff.com/post/get-all-dates-between-two-dates-in-moment-jsexample.html
-var getDaysBetweenDates = function(startDate, endDate) {
+//Author: https://www.itsolutionstuff.com/post/get-all-dates-between-two-dates-in-moment-jsexample.html
+function getDaysBetweenDates(startDate, endDate) {
     startDate=moment(startDate)
     endDate=moment(endDate)
     var now = startDate.clone(), dates = [];
@@ -265,6 +269,6 @@ var getDaysBetweenDates = function(startDate, endDate) {
 //Formats given hours and minutes to HH:MM.
 //Given hours and minutes
 //Returns sama hours and minutes in full HH:MM format. 
-prettyTimeFormat = function(hours, minutes){
+ function prettyTimeFormat(hours, minutes){
     return (hours <= 9 ? "0" : "") + hours + ':' + (minutes <= 9 ? "0" : "") + minutes;
 }
